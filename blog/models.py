@@ -46,6 +46,7 @@ class Post(models.Model):
     # 文章和标签是多对多的关系，一篇文章可以没有标签
     tags = models.ManyToManyField(Tag, blank=True, verbose_name='标签')
     author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='作者')
+    views = models.PositiveIntegerField(default=0, editable=False, verbose_name='阅读量')
 
     # 重写 save 方法
     def save(self, *args, **kwargs):
@@ -69,6 +70,11 @@ class Post(models.Model):
     # 自定义 get_absolute_url 方法
     def get_absolute_url(self):
         return reverse('blog:detail', kwargs={'pk': self.pk})
+
+    # 文章阅读量自动增加
+    def increase_views(self):
+        self.views += 1
+        self.save(update_fields=['views'])
 
     class Meta:
         verbose_name = '文章'
