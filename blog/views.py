@@ -1,8 +1,5 @@
 from django.shortcuts import get_object_or_404
 from .models import Post, Category, Tag
-import markdown, re
-from django.utils.text import slugify
-from markdown.extensions.toc import TocExtension
 from django.views.generic import ListView, DetailView
 
 from pure_pagination.mixins import PaginationMixin
@@ -37,23 +34,6 @@ class PostDetailView(DetailView):
         self.object.increase_views()
         # 试图必须返回一个 Response 对象
         return response
-
-    def get_object(self, queryset=None):
-        # 覆写 get_object 方法的目的是对 post 的 body 值进行渲染
-        post = super().get_object(queryset=None)
-        # 将正文做markdown转html处理
-        md = markdown.Markdown(extensions=[
-            'markdown.extensions.extra',
-            'markdown.extensions.codehilite',
-            # 美化标题的锚点
-            TocExtension(slugify=slugify),
-        ])
-        post.body = md.convert(post.body)
-        # re.S 将toc作为一整个字符串匹配，不逐行匹配
-        m = re.search(r'<div class="toc">\s*<ul>(.*)</ul>\s*</div>', md.toc, re.S)
-        # group(1) 返回第一个()中匹配的字符串
-        post.toc = m.group(1) if m is not None else ''
-        return post
 
 
 class ArchivesView(IndexView):
